@@ -21,20 +21,19 @@ fn main() {
             let digit = (c.to_string()).parse::<i64>().unwrap();
             digits.push(digit);
         }
-        let mut digits_slice: &[i64] = &digits[0..];
+        let mut max_pos: usize = 0;
+
         for i in 0..12 {
             let mut max = -1;
-            let mut max_pos: usize = 0;
-            for j in 0..(digits_slice.len()-(12-i-1)){
-                if digits_slice[j] > max {
-                    max = digits_slice[j];
-                    max_pos = j;
+            for j in max_pos ..(digits.len() -(12-i-1)){
+                if digits[j] > max {
+                    max = digits[j];
+                    max_pos = j+1;
                 }
                 if max == 9 {
                     break;
                 }
             }
-            digits_slice = &digits_slice[max_pos+1..];
             value *= 10;
             value += max;
         }

@@ -13,6 +13,7 @@ fn read_lines(filename: &str) -> Vec<String> {
 fn main() {
     let lines: Vec<String> = read_lines("input_1");
     solve_part_1(&lines);
+    solve_part_2(&lines);
 }
 
 fn solve_part_1(lines: &[String]) {
@@ -30,7 +31,6 @@ fn solve_part_1(lines: &[String]) {
         let mut counter = 0;
 
         for value in split.iter() {
-            println!("{}", value);
             if *value == "*" {
                 result += equations[counter]
                     .iter()
@@ -46,5 +46,55 @@ fn solve_part_1(lines: &[String]) {
         }
     }
 
+    println!("{}", result)
+}
+
+fn solve_part_2(lines: &[String]) {
+    let mut nums: Vec<i64> = Vec::new();
+    let mut char_matrix: Vec<Vec<char>> = Vec::new();
+    for line in lines.iter() {
+        char_matrix.push(line.chars().collect());
+    }
+
+    let mut result: i64 = 0;
+    let mut col = (char_matrix[0].len() - 1) as i32;
+    while col >= 0 {
+        let mut num = 0;
+        let mut row = 0;
+
+        while row < char_matrix.len() {
+            let char = char_matrix[row][col as usize];
+
+            if char == '*' {
+                nums.push(num);
+                result += nums
+                    .iter()
+                    .copied()
+                    .reduce(|res, value| res * value)
+                    .unwrap();
+                println!("{}", result);
+
+                nums.clear();
+                col -= 1;
+            } else if char == '+' {
+                nums.push(num);
+                result += nums.iter().sum::<i64>();
+                nums.clear();
+                println!("{}", result);
+                col -= 1;
+            } else {
+                if row == char_matrix.len() - 1 {
+                    if num != 0 {
+                        nums.push(num);
+                    }
+                    col -= 1;
+                } else if char != ' ' {
+                    num *= 10;
+                    num += char.to_digit(10).unwrap() as i64;
+                }
+            }
+            row += 1;
+        }
+    }
     println!("{}", result)
 }

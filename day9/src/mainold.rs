@@ -96,81 +96,103 @@ fn solve_part_2(positions: &[Position]) -> i64 {
             end: end.clone(),
             dir: dir,
         })
-        
     }
 
     //Initial square done;
     let mut max: i64 = 0;
     for a in positions.iter() {
         for b in positions.iter() {
-            let min_x = a.x.min(b.x);
-            let max_x = a.x.max(b.x);
-            let min_y = a.y.min(b.y);
-            let max_y = a.y.max(b.y);
-
-            let mut bl_left = false;
-            let mut bl_bottom = false;
-            let mut tl_left = false;
-            let mut tl_top = false;
-            let mut tr_right = false;
-            let mut tr_top = false;
-            let mut br_right = false;
-            let mut br_bottom = false;
+            let mut found = false;
 
             for range in &marked {
                 if range.dir == Direction::Y {
-                    if range.start.x <= min_x {
-                        if range.start.y <= min_y && range.end.y >= min_y {
-                            bl_left = true;
-                        }
-                        if range.start.y <= max_y && range.end.y >= max_y {
-                            tl_left = true;
-                        }
+                    let mut range_correct = false;
+
+                    if b.x >= a.x && range.start.x <= a.x {
+                        range_correct = true;
+                    } else if b.x <= a.x && range.start.x >= a.x {
+                        range_correct = true;
                     }
-                    if range.start.x >= max_x {
-                        if range.start.y <= max_y && range.end.y >= max_y {
-                            tr_right = true;
-                        }
-                        if range.start.y <= min_y && range.end.y >= min_y {
-                            br_right = true;
-                        }
-                    }
-                } else {
-                    if range.start.y <= min_y {
-                        if range.start.x <= min_x && range.end.x >= min_x {
-                            bl_bottom = true;
-                        }
-                        if range.start.x <= max_x && range.end.x >= max_x {
-                            br_bottom = true;
-                        }
-                    }
-                    if range.start.y >= max_y {
-                        if range.start.x <= min_x && range.end.x >= min_x {
-                            tl_top = true;
-                        }
-                        if range.start.x <= max_x && range.end.x >= max_x {
-                            tr_top = true;
-                        }
+                    if range.start.y <= b.y && range.end.y >= b.y && range_correct {
+                        found = true;
+                        break;
                     }
                 }
             }
 
-            if !(bl_left
-                && bl_bottom
-                && tl_left
-                && tl_top
-                && tr_right
-                && tr_top
-                && br_right
-                && br_bottom)
-            {
+            if !found {
                 continue;
             }
+
+            found = false;
+
+            for range in &marked {
+                if range.dir == Direction::X {
+                    let mut range_correct = false;
+                    if b.y >= a.y && range.start.y >= b.y {
+                        range_correct = true;
+                    } else if b.y <= a.y && range.start.y <= b.y {
+                        range_correct = true;
+                    }
+                    if range.start.x <= a.x && range.end.x >= a.x && range_correct {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if !found {
+                continue;
+            }
+
+            found = false;
+
+            for range in &marked {
+                if range.dir == Direction::X {
+                    let mut range_correct = false;
+                    if b.y >= a.y && range.start.y <= a.y {
+                        range_correct = true;
+                    } else if b.y <= a.y && range.start.y >= a.y {
+                        range_correct = true;
+                    }
+                    if range.start.x <= b.x && range.end.x >= b.x && range_correct {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if !found {
+                continue;
+            }
+
+            found = false;
+
+            for range in &marked {
+                if range.dir == Direction::Y {
+                    let mut range_correct = false;
+                    if b.x >= a.x && range.start.x >= a.x {
+                        range_correct = true;
+                    } else if b.x <= a.x && range.start.x <= a.x {
+                        range_correct = true;
+                    }
+                    if range.start.y <= b.y && range.end.y >= b.y && range_correct {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if !found {
+                continue;
+            }
+
+            
+
 
             let size = ((a.x - b.x).abs() + 1) * ((a.y - b.y).abs() + 1);
             if size >= max {
                 max = size;
-                println!("{:?} {:?} {}", a, b, max);
             }
         }
     }

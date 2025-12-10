@@ -49,7 +49,7 @@ def main():
 
                 sol_1 += solve_part_1([0] * len(array_part), array_part, paren_lists)
                 sol_2 += solve_part_2([0] * len(brace_list), brace_list, paren_lists)
-                print("Done")
+                print(line, sol_2)
             print(sol_1)
             print(sol_2)
     except FileNotFoundError:
@@ -77,31 +77,39 @@ def solve_part_1(current_lights, lights_correct, buttons):
 
 
 def solve_part_2(current_counters, counters_expected, buttons):
-    queue = [(current_counters, 0)]
-    seen = set()
+    from scipy.optimize import linprog
+    import numpy as np
 
-    while len(queue) > 0:
-        current_counters, steps = queue.pop(0)
-        print(current_counters, steps)
-        for i in range(len(current_counters)):
-            if current_counters[i] > counters_expected[i]:
-                seen.add(tuple(current_counters))
-        print(current_counters)
-        if tuple(current_counters) in seen:
-            continue
-        else:
-            seen.add(tuple(current_counters))
+    num_counters = len(counters_expected)
+    num_buttons = len(buttons)
+    
+    # A matrix: rows are counters, cols are buttons
+    A = np.zeros((num_counters, num_buttons))
+    for j, btn in enumerate(buttons):
+        for counter_idx in btn:
+            if counter_idx < num_counters:
+                A[counter_idx, j] = 1
+                
+    # b vector: expected - current
+    b = np.array(counters_expected) - np.array(current_counters)
+    
+    # Objective: minimize sum(x)
+    c = np.ones(num_buttons)
+    
+    # Bounds: x >= 0
+    bounds = [(0, None) for _ in range(num_buttons)]
+    
+    # Integrality: 1 for integer variables
+    integrality = np.ones(num_buttons)
 
-        if current_counters == counters_expected:
-            return steps
-        else:
-            for button in buttons:
-                result = press_joltage_button(current_counters.copy(), button)
-                for i in range(len(result)):
-                    if result[i] > counters_expected[i]:
-                        seen.add(tuple(result))
-                if(tuple(result) not in seen):
-                    queue.append((result, steps + 1))
+    # Solve with integrality constraints (MILP)
+    # Note: 'highs' method is required for integrality
+    res = linprog(c, A_eq=A, b_eq=b, bounds=bounds, method='highs', integrality=integrality)
+    
+    if res.success:
+        return int(np.round(res.fun))
+    
+    return 0
 
 
 def press_light_button(lights, button):
